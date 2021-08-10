@@ -1,32 +1,25 @@
+import { observer } from 'mobx-react-lite'
 import React, { SyntheticEvent, useState } from 'react'
 import { Button, Item, Label, Segment } from 'semantic-ui-react'
-import { Activity } from '../../../app/models/activity'
+import { useStore } from '../../../app/stores/store'
 
-interface Props {
-  activities: Activity[]
-  handleSelectActivity: (activityId: string) => void
-  handleDeleteActivity: (activityId: string) => void
-  submitting: boolean
-}
-export default function ActivityList({
-  activities,
-  handleSelectActivity,
-  handleDeleteActivity,
-  submitting
-}: Props) {
+function ActivityList() {
+  const {
+    activityStore: { openForm, deleteActivity, activitiesByDate, loading },
+  } = useStore()
   const [target, setTarget] = useState('')
 
-  const deleteActivity = (
+  const handleDeleteActivity = (
     e: SyntheticEvent<HTMLButtonElement>,
     id: string
   ) => {
     setTarget(e.currentTarget.name)
-    handleDeleteActivity(id)
+    deleteActivity(id)
   }
   return (
     <Segment>
       <Item.Group divided>
-        {activities.map(
+        {activitiesByDate.map(
           ({ id, title, date, description, city, venue, category }) => (
             <Item key={id}>
               <Item.Content>
@@ -43,15 +36,15 @@ export default function ActivityList({
                     floated="right"
                     content="View"
                     color="blue"
-                    onClick={() => handleSelectActivity(id)}
+                    onClick={() => openForm(id)}
                   />
                   <Button
                     name={id}
                     floated="right"
                     content="Delete"
-                    loading={submitting && target === id}
+                    loading={loading && target === id}
                     color="red"
-                    onClick={(e) => deleteActivity(e, id)}
+                    onClick={(e) => handleDeleteActivity(e, id)}
                   />
                   <Label basic content={category} />
                 </Item.Extra>
@@ -63,3 +56,4 @@ export default function ActivityList({
     </Segment>
   )
 }
+export default observer(ActivityList)

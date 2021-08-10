@@ -1,61 +1,27 @@
+import { observer } from 'mobx-react-lite'
 import React from 'react'
 import { Grid } from 'semantic-ui-react'
-import { Activity } from '../../../app/models/activity'
+import { useStore } from '../../../app/stores/store'
 import ActivityDetails from '../details/ActivityDetails'
-import { ActivityForm } from '../form/ActivityForm'
+import ActivityForm from '../form/ActivityForm'
 import ActivityList from './ActivityList'
 
-interface Props {
-  activities: Activity[]
-  handleSelectActivity: (activityId: string) => void
-  selectedActivity: Activity | undefined
-  handleUnselectActivity: () => void
-  editMode: boolean
-  handleFormOpen: (activityId: string) => void
-  handleFormClose: () => void
-  handleCreateOrEditActivity: (activity : Activity) => void
-  handleDeleteActivity: (activityId: string) => void
-  submitting: boolean
-}
-export default function ActivityDashboard({
-  activities,
-  handleSelectActivity,
-  selectedActivity,
-  handleUnselectActivity,
-  editMode,
-  handleFormOpen,
-  handleFormClose,
-  handleCreateOrEditActivity,
-  handleDeleteActivity,
-  submitting
-}: Props) {
+
+function ActivityDashboard() {
+  const {
+    activityStore: { selectedActivity, editMode },
+  } = useStore()
+
   return (
     <Grid>
       <Grid.Column width="10">
-        <ActivityList
-          activities={activities}
-          handleSelectActivity={handleSelectActivity}
-          handleDeleteActivity={handleDeleteActivity}
-          submitting={submitting}
-        />
+        <ActivityList />
       </Grid.Column>
       <Grid.Column width="6">
-        {selectedActivity && !editMode && (
-          <ActivityDetails
-            activity={selectedActivity}
-            handleUnselectActivity={handleUnselectActivity}
-            handleFormOpen={handleFormOpen}
-          />
-        )}
-        {editMode && (
-          <ActivityForm
-            handleFormClose={handleFormClose}
-            activity={selectedActivity}
-            handleCreateOrEditActivity={handleCreateOrEditActivity}
-            submitting={submitting}
-          />
-        )}
+        {selectedActivity && !editMode && <ActivityDetails />}
+        {editMode && <ActivityForm />}
       </Grid.Column>
     </Grid>
   )
 }
+export default observer(ActivityDashboard)

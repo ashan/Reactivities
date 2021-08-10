@@ -1,31 +1,42 @@
-import React, { useState } from 'react'
+import { observer } from 'mobx-react-lite'
+import React, { useEffect, useState } from 'react'
 import { Button, Form, Segment } from 'semantic-ui-react'
 import { Activity } from '../../../app/models/activity'
+import { useStore } from '../../../app/stores/store'
 
-interface Props {
-  activity: Activity | undefined
-  handleFormClose: () => void
-  handleCreateOrEditActivity: (activity: Activity) => void
-  submitting: boolean
-}
+const ActivityForm = () => {
+  const {
+    activityStore: {
+      selectedActivity,
+      closeForm,
+      createActivity,
+      updateActivity,
+      loading,
+    },
+  } = useStore()
+  const [activity, setActivity] = useState<Activity>({
+    id: '',
+    title: '',
+    date: '',
+    description: '',
+    category: '',
+    city: '',
+    venue: '',
+  })
 
-export const ActivityForm = ({
-  activity: selectedActivity,
-  handleFormClose,
-  handleCreateOrEditActivity,
-  submitting
-}: Props) => {
-  const [activity, setActivity] = useState<Activity>(
-    selectedActivity ?? {
-      id: '',
-      title: '',
-      date: '',
-      description: '',
-      category: '',
-      city: '',
-      venue: '',
-    }
-  )
+  useEffect(() => {
+    setActivity(
+      selectedActivity ?? {
+        id: '',
+        title: '',
+        date: '',
+        description: '',
+        category: '',
+        city: '',
+        venue: '',
+      }
+    )
+  }, [selectedActivity])
 
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -34,7 +45,9 @@ export const ActivityForm = ({
     setActivity({ ...activity, [name]: value })
   }
 
-  const handleSubmit = () => handleCreateOrEditActivity(activity)
+  const handleSubmit = () =>
+    activity.id ? updateActivity(activity) : createActivity(activity)
+
   return (
     <Segment clearing onSubmit={handleSubmit} autoComplete="off">
       <Form>
@@ -75,14 +88,21 @@ export const ActivityForm = ({
           name="venue"
           onChange={handleInputChange}
         />
-        <Button positive floated="right" type="submit" content="Submit" loading={submitting} />
+        <Button
+          positive
+          floated="right"
+          type="submit"
+          content="Submit"
+          loading={loading}
+        />
         <Button
           floated="right"
           type="submit"
           content="Cancel"
-          onClick={() => handleFormClose()}
+          onClick={() => closeForm()}
         />
       </Form>
     </Segment>
   )
 }
+export default observer(ActivityForm)
