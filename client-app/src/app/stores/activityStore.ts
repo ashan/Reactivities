@@ -19,6 +19,18 @@ export default class ActivityStore {
     )
   }
 
+  get groupedActivities() {
+    return Object.entries(
+      this.activitiesByDate.reduce((activities, activity) => {
+        const date = activity.date
+        activities[date] = activities[date]
+          ? [...activities[date], activity]
+          : [activity]
+        return activities
+      }, {} as { [key: string]: Activity[] })
+    )
+  }
+
   loadActivities = async () => {
     this.loadingInitial = true
     try {
@@ -33,7 +45,7 @@ export default class ActivityStore {
     }
   }
 
-  loadActivity = async (id: string) : Promise<Activity|undefined>=> {
+  loadActivity = async (id: string): Promise<Activity | undefined> => {
     let activity = this.activityRegistry.get(id)
     if (activity) {
       this.selectedActivity = activity

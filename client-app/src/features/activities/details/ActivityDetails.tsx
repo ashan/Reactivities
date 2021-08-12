@@ -1,51 +1,36 @@
-import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite'
 import React, { useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom';
-import { Card, Image, Button } from 'semantic-ui-react'
-import LoadingComponent from '../../../app/layout/LoadingComponent';
+import { useParams } from 'react-router-dom'
+import { Grid } from 'semantic-ui-react'
+import LoadingComponent from '../../../app/layout/LoadingComponent'
 import { useStore } from '../../../app/stores/store'
-
+import ActivityDetailsChat from './ActivityDetailsChat'
+import ActivityDetailsHeader from './ActivityDetailsHeader'
+import ActivityDetailsInfo from './ActivityDetailsInfo'
+import ActivityDetailsSidebar from './ActivityDetailsSidebar'
 
 export default observer(function ActivityDetails() {
-
-  const {activityStore: {selectedActivity, loadActivity, loadingInitial}} = useStore();
-  const {id} = useParams<{id: string}>()
+  const {
+    activityStore: { selectedActivity, loadActivity, loadingInitial },
+  } = useStore()
+  const { id } = useParams<{ id: string }>()
 
   useEffect(() => {
-    if(id) loadActivity(id)
+    if (id) loadActivity(id)
   }, [id, loadActivity])
-  
-  if(loadingInitial || !selectedActivity) return (<LoadingComponent/>)
 
-  const { category, title, date, description } = selectedActivity
+  if (loadingInitial || !selectedActivity) return <LoadingComponent />
+
   return (
-    <Card fluid>
-      <Image src={`/assets/categoryImages/${category}.jpg`} />
-      <Card.Content>
-        <Card.Header>{title}</Card.Header>
-        <Card.Meta>
-          <span>{date}</span>
-        </Card.Meta>
-        <Card.Description>{description}</Card.Description>
-      </Card.Content>
-      <Card.Content extra>
-        <Button.Group widths="2">
-          <Button
-            as={Link}
-            to={`/manage/${selectedActivity.id}`}
-            basic
-            color="blue"
-            content="Edit"
-          />
-          <Button
-            as={Link}
-            to={'/activities'}
-            basic
-            color="grey"
-            content="Cancel"
-          />
-        </Button.Group>
-      </Card.Content>
-    </Card>
+    <Grid>
+      <Grid.Column width="10">
+        <ActivityDetailsHeader activity={selectedActivity} />
+        <ActivityDetailsInfo activity={selectedActivity} />
+        <ActivityDetailsChat />
+      </Grid.Column>
+      <Grid.Column width="6">
+        <ActivityDetailsSidebar />
+      </Grid.Column>
+    </Grid>
   )
 })
