@@ -1,19 +1,27 @@
 import { observer } from 'mobx-react-lite'
 import React, { useEffect, useState } from 'react'
+import { Link, useHistory, useParams } from 'react-router-dom'
 import { Button, Form, Segment } from 'semantic-ui-react'
+import LoadingComponent from '../../../app/layout/LoadingComponent'
 import { Activity } from '../../../app/models/activity'
 import { useStore } from '../../../app/stores/store'
+import { v4 as uuid } from 'uuid'
 
 const ActivityForm = () => {
+  const history = useHistory()
   const {
     activityStore: {
-      selectedActivity,
-      closeForm,
+      loadActivity,
       createActivity,
       updateActivity,
+      loadingInitial,
+      setLoadingInitial,
       loading,
     },
   } = useStore()
+
+  const { id } = useParams<{ id: string }>()
+
   const [activity, setActivity] = useState<Activity>({
     id: '',
     title: '',
@@ -25,18 +33,16 @@ const ActivityForm = () => {
   })
 
   useEffect(() => {
-    setActivity(
-      selectedActivity ?? {
-        id: '',
-        title: '',
-        date: '',
-        description: '',
-        category: '',
-        city: '',
-        venue: '',
+    const getActivity = async () => {
+      if (id) {
+        const activity = await loadActivity(id)
+        setActivity(activity!)
+      } else {
+        setLoadingInitial(false)
       }
-    )
-  }, [selectedActivity])
+    }
+    getActivity()
+  }, [id, loadActivity, setLoadingInitial])
 
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -45,9 +51,18 @@ const ActivityForm = () => {
     setActivity({ ...activity, [name]: value })
   }
 
-  const handleSubmit = () =>
-    activity.id ? updateActivity(activity) : createActivity(activity)
+  const handleSubmit = async () => {
+    if (activity.id.length === 0) {
+      let newActivity = { ...activity, id: uuid() }
+      await createActivity(newActivity)
+      history.push(`/activities/${newActivity.id}`)
+    } else {
+      await updateActivity(activity)
+      history.push(`/activities/${activity.id}`)
+    }
+  }
 
+  if (loadingInitial) return <LoadingComponent content="Loading activity..." />
   return (
     <Segment clearing onSubmit={handleSubmit} autoComplete="off">
       <Form>
@@ -96,10 +111,11 @@ const ActivityForm = () => {
           loading={loading}
         />
         <Button
+          as={Link}
+          to="/activities"
           floated="right"
           type="submit"
           content="Cancel"
-          onClick={() => closeForm()}
         />
       </Form>
     </Segment>
