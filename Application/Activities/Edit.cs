@@ -1,18 +1,24 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 
 namespace Application.Activities
 {
   public class Edit
   {
-    public class Command : MediatR.IRequest
+    public class Command : MediatR.IRequest<Application.Core.Result<MediatR.Unit>>
     {
       public Domain.Activity Activity { get; set; }
 
     }
+    public class CommandValidator : FluentValidation.AbstractValidator<Command>
+    {
+      public CommandValidator()
+      {
+          RuleFor(c => c.Activity).SetValidator(new ActivityVAlidator());
+      }
+    }
 
-    public class Handler : MediatR.IRequestHandler<Command>
+    public class Handler : MediatR.IRequestHandler<Command, Application.Core.Result<MediatR.Unit>>
     {
       private readonly Persistence.DataContext _context;
       private readonly AutoMapper.IMapper _mappeer;
@@ -23,13 +29,15 @@ namespace Application.Activities
         _mappeer = mappeer;
       }
 
-      public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+      public async Task<Application.Core.Result<MediatR.Unit>> Handle(Command request, CancellationToken cancellationToken)
       {
         var activity = await _context.Activities.FindAsync(request.Activity.Id);
-        _mappeer.Map(request.Activity, activity);
+        if(activity == null) return null;
 
-        await _context.SaveChangesAsync();
-        return Unit.Value;
+        _mappeer.Map(request.Activity, activity);
+        var result = await _context.SaveChangesAsync() > 0;
+        if(!result) return Application.Core.Result<MediatR.Unit>.Failure("Failed to update activity");
+        return Application.Core.Result<MediatR.Unit>.Success(MediatR.Unit.Value);
       }
     }
   }

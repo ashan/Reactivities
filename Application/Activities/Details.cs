@@ -6,12 +6,12 @@ namespace Application.Activities
 {
   public class Details
   {
-    public class Query : MediatR.IRequest<Domain.Activity>
+    public class Query : MediatR.IRequest<Core.Result<Domain.Activity>>
     {
       public System.Guid Id { get; set; }
     }
 
-    public class Handler : MediatR.IRequestHandler<Query, Domain.Activity>
+    public class Handler : MediatR.IRequestHandler<Query, Core.Result<Domain.Activity>>
     {
       private readonly Persistence.DataContext _context;
       public Handler(Persistence.DataContext context)
@@ -19,9 +19,10 @@ namespace Application.Activities
         _context = context;
       }
 
-      public async Task<Activity> Handle(Query request, CancellationToken cancellationToken)
+      public async Task<Core.Result<Activity>> Handle(Query request, CancellationToken cancellationToken)
       {
-        return await _context.Activities.FindAsync(request.Id);
+        var activity =  await _context.Activities.FindAsync(request.Id);
+        return Core.Result<Domain.Activity>.Success(activity);
       }
     }
   }
