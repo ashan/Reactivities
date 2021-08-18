@@ -1,7 +1,9 @@
 import { observer } from 'mobx-react-lite'
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Segment, Image, Item, Header, Button } from 'semantic-ui-react'
 import { Activity } from '../../../app/models/activity'
+import {format} from 'date-fns'
 
 const activityImageStyle = {
   filter: 'brightness(30%)',
@@ -19,7 +21,7 @@ interface Props {
 }
 
 const ActivityDetailsHeader = ({
-  activity: { category, title, date },
+  activity: { id, category, title, date },
 }: Props) => {
   return (
     <Segment.Group>
@@ -38,7 +40,7 @@ const ActivityDetailsHeader = ({
                   content={title}
                   style={{ color: 'white' }}
                 />
-                <p>{date}</p>
+                <p>{format(date!, 'dd MMM yyyy')}</p>
                 <p>
                   Hosted by <strong>Bob</strong>
                 </p>
@@ -50,7 +52,7 @@ const ActivityDetailsHeader = ({
       <Segment clearing attached="bottom">
         <Button color="teal">Join Activity</Button>
         <Button>Cancel Attendance</Button>
-        <Button color="orange" floated="right">
+        <Button color="orange" floated="right" as={Link} to={`/manage/${id}`}>
           Manage Event
         </Button>
       </Segment>
